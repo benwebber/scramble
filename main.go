@@ -8,7 +8,18 @@ import (
 	"regexp"
 	"time"
 	"unicode"
+
+	"github.com/docopt/docopt.go"
 )
+
+var usage = `Usage: scramble [options] [<file>...]
+
+Options:
+  -h, --help     Show this screen and exit.
+  -r, --random   Replace words with random characters.
+  -V, --version  Show the version and exit.
+
+If <file> is not specified, or if <file> is -, read from standard input.`
 
 var lowercaseRegexp = regexp.MustCompile("[\\p{Ll}]")
 var uppercaseRegexp = regexp.MustCompile("[\\p{Lu}]")
@@ -77,13 +88,56 @@ func Scramble(s string) (ret string) {
 	return
 }
 
+// Given a slice of filenames, return a slice of file handles.
+func GetFileHandles(filenames ...string) (files []*os.File, err error) {
+	if len(filenames) == 0 {
+		files = append(files, os.Stdin)
+	} else if filenames[0] == "-" {
+		files = append(files, os.Stdin)
+	} else {
+		for _, fn := range filenames {
+			f, e := os.Open(fn)
+			if e != nil {
+				err = e
+				return
+			}
+			files = append(files, f)
+		}
+	}
+	return
+}
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		fmt.Println(Scramble(scanner.Text()))
+	arguments, err := docopt.Parse(usage, nil, true, "scramble 0.1", false)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Construct a slice of file handles.
+	filenames := arguments["<file>"].([]string)
+	files, err := GetFileHandles(filenames...)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Choose a function to apply to each file.
+	random := arguments["--random"].(bool)
+	var action func(string) string
+	if random {
+		action = Randomize
+	} else {
+		action = Scramble
+	}
+
+	// Apply function to each file.
+	for _, f := range files {
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			fmt.Println(action(scanner.Text()))
+		}
 	}
 }
