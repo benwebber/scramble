@@ -1,8 +1,6 @@
 # scramble
 
-`scramble` is a small utility that replaces all letters in a text file with random ASCII letters of the same case.
-
-It is not meant to obfuscate a document, but to render it completely illegible while preserving word and character counts.
+`scramble` is a small utility that scrambles all the words in a text file.
 
 ## Usage
 
@@ -11,4 +9,4 @@ It is not meant to obfuscate a document, but to render it completely illegible w
     $ cat lipsum.txt
     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     $ scramble < lipsum.txt
-    Zvngz ptmlg zxxgq egr yhjh, uctcuqfoacm nkpstroajc eqvq.
+    Roelm miups dlroo sti tmae, cctrtensoeu niagdcpisi eitl.
