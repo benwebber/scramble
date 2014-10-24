@@ -50,7 +50,9 @@ func Randomize(text string) (ret string) {
 	return
 }
 
-func Scramble(s string) (ret string) {
+// Scramble scrambles the words in a Unicode string in place.
+// Scramble preserves punctuation and the positions of uppercase letters.
+func Scramble(s string) string {
 	// Use FindAllStringIndex() to locate and preserve the positions of
 	// uppercase letters.
 	uppercasePositions := []int{}
@@ -70,7 +72,7 @@ func Scramble(s string) (ret string) {
 		wordStart := i[0]
 		wordEnd := i[1]
 		word := runes[wordStart:wordEnd]
-		// ShuffleRunes the word, then replace the word in the rune slice with
+		// Shuffle the word, then replace the word in the rune slice with
 		// its shuffled version.
 		runeIndex := wordStart
 		for _, r := range ShuffleRunes(word) {
@@ -84,8 +86,7 @@ func Scramble(s string) (ret string) {
 		runes[i] = unicode.ToUpper(runes[i])
 	}
 
-	ret = string(runes)
-	return
+	return string(runes)
 }
 
 // OpenFiles opens the named files for reading and returns a slice of file
