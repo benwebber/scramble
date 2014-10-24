@@ -20,12 +20,9 @@ Options:
   -V, --version  Show the version and exit.
 
 If <file> is not specified, or if <file> is -, read from standard input.`
-
-var lowercaseRegexp = regexp.MustCompile("[\\p{Ll}]")
 var uppercaseRegexp = regexp.MustCompile("[\\p{Lu}]")
 var letterRegexp = regexp.MustCompile("\\p{L}+")
-var uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVQXYZ"
-var lowercaseChars = "abcdefghijklmnopqrstuvqxyz"
+var letters = []rune("abcdefghijklmnopqrstuvwxyz")
 
 // ShuffleRunes shuffles a slice of runes and returns a new slice.
 func ShuffleRunes(r []rune) []rune {
@@ -36,56 +33,58 @@ func ShuffleRunes(r []rune) []rune {
 	return runes
 }
 
-// Replace upper- or lowercase letters with random characters of the same case.
-func Randomize(text string) (ret string) {
-	runes := []rune(text)
-	for i, c := range text {
-		if uppercaseRegexp.MatchString(string(c)) {
-			runes[i] = rune(uppercaseChars[rand.Intn(len(uppercaseChars))])
-		} else if lowercaseRegexp.MatchString(string(c)) {
-			runes[i] = rune(lowercaseChars[rand.Intn(len(lowercaseChars))])
-		}
+// RandomRunes returns a random slice of runes of the given length.
+// The set of runes used is equivalent to the set of lowercase ASCII letters.
+func RandomRunes(n int) []rune {
+	runes := make([]rune, n)
+	for i, _ := range runes {
+		runes[i] = letters[rand.Intn(len(letters))]
 	}
-	ret = string(runes)
-	return
+	return runes
 }
 
-// Scramble scrambles the words in a Unicode string in place.
+// Scramble scrambles the words in a Unicode string.
+// If random is false, scramble words in place (e.g., lorem > merlo).
+// If random is true, replace words with random ASCII letters.
 // Scramble preserves punctuation and the positions of uppercase letters.
-func Scramble(s string) string {
+func Scramble(s string, random bool) string {
 	// Use FindAllStringIndex() to locate and preserve the positions of
 	// uppercase letters.
 	uppercasePositions := []int{}
 	for _, i := range uppercaseRegexp.FindAllStringIndex(s, -1) {
 		uppercasePositions = append(uppercasePositions, i[0])
 	}
-
 	// Convert the string to lowercase runes for processing.
 	runes := []rune(s)
 	for i, _ := range runes {
 		runes[i] = unicode.ToLower(runes[i])
 	}
-
 	// Use FindAllStringIndex() to establish word boundaries by looking for
 	// continuous sequences of letters.
 	for _, i := range letterRegexp.FindAllStringIndex(s, -1) {
 		wordStart := i[0]
 		wordEnd := i[1]
 		word := runes[wordStart:wordEnd]
-		// Shuffle the word, then replace the word in the rune slice with
-		// its shuffled version.
 		runeIndex := wordStart
-		for _, r := range ShuffleRunes(word) {
-			runes[runeIndex] = r
-			runeIndex++
+		if random {
+			// Replace characters with random ASCII letters.
+			for _, r := range RandomRunes(len(word)) {
+				runes[runeIndex] = r
+				runeIndex++
+			}
+		} else {
+			// Shuffle the word, then replace the word in the rune slice with
+			// its shuffled version.
+			for _, r := range ShuffleRunes(word) {
+				runes[runeIndex] = r
+				runeIndex++
+			}
 		}
 	}
-
 	// Restore uppercase characters.
 	for _, i := range uppercasePositions {
 		runes[i] = unicode.ToUpper(runes[i])
 	}
-
 	return string(runes)
 }
 
@@ -122,28 +121,18 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	// Construct a slice of file handles.
 	filenames := arguments["<file>"].([]string)
 	files, err := OpenFiles(filenames...)
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	// Choose a function to apply to each file.
+	// Scramble each file line-by-line.
 	random := arguments["--random"].(bool)
-	var action func(string) string
-	if random {
-		action = Randomize
-	} else {
-		action = Scramble
-	}
-
-	// Apply function to each file.
 	for _, f := range files {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
-			fmt.Println(action(scanner.Text()))
+			fmt.Println(Scramble(scanner.Text(), random))
 		}
 	}
 }
