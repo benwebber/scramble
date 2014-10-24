@@ -88,23 +88,28 @@ func Scramble(s string) (ret string) {
 	return
 }
 
-// Given a slice of filenames, return a slice of file handles.
-func GetFileHandles(filenames ...string) (files []*os.File, err error) {
+// OpenFiles opens the named files for reading and returns a slice of file
+// descriptors.
+// If there is an error opening any file, OpenFiles will return an empty slice.
+func OpenFiles(filenames ...string) ([]*os.File, error) {
+	files := []*os.File{}
+	// Default to standard input.
 	if len(filenames) == 0 {
 		files = append(files, os.Stdin)
-	} else if filenames[0] == "-" {
-		files = append(files, os.Stdin)
-	} else {
-		for _, fn := range filenames {
-			f, e := os.Open(fn)
-			if e != nil {
-				err = e
-				return
-			}
-			files = append(files, f)
-		}
+		return files, nil
 	}
-	return
+	if filenames[0] == "-" {
+		files = append(files, os.Stdin)
+		return files, nil
+	}
+	for _, fn := range filenames {
+		f, err := os.Open(fn)
+		if err != nil {
+			return []*os.File{}, err
+		}
+		files = append(files, f)
+	}
+	return files, nil
 }
 
 func init() {
@@ -119,7 +124,7 @@ func main() {
 
 	// Construct a slice of file handles.
 	filenames := arguments["<file>"].([]string)
-	files, err := GetFileHandles(filenames...)
+	files, err := OpenFiles(filenames...)
 	if err != nil {
 		fmt.Println(err)
 	}
