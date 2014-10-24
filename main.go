@@ -27,13 +27,13 @@ var letterRegexp = regexp.MustCompile("\\p{L}+")
 var uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVQXYZ"
 var lowercaseChars = "abcdefghijklmnopqrstuvqxyz"
 
-// Shuffle a slice of runes.
-func ShuffleRunes(r []rune) (ret []rune) {
-	ret = make([]rune, 0, len(r))
+// ShuffleRunes shuffles a slice of runes and returns a new slice.
+func ShuffleRunes(r []rune) []rune {
+	runes := make([]rune, 0, len(r))
 	for _, n := range rand.Perm(len(r)) {
-		ret = append(ret, r[n])
+		runes = append(runes, r[n])
 	}
-	return
+	return runes
 }
 
 // Replace upper- or lowercase letters with random characters of the same case.
