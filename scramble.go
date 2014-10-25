@@ -93,16 +93,11 @@ func Scramble(s string, random bool) string {
 // If there is an error opening any file, OpenFiles will return an empty slice.
 func OpenFiles(filenames ...string) ([]*os.File, error) {
 	files := []*os.File{}
-	// Default to standard input.
-	if len(filenames) == 0 {
-		files = append(files, os.Stdin)
-		return files, nil
-	}
-	if filenames[0] == "-" {
-		files = append(files, os.Stdin)
-		return files, nil
-	}
 	for _, fn := range filenames {
+		if fn == "-" {
+			files = append(files, os.Stdin)
+			continue
+		}
 		f, err := os.Open(fn)
 		if err != nil {
 			return []*os.File{}, err
@@ -126,6 +121,10 @@ func main() {
 	files, err := OpenFiles(filenames...)
 	if err != nil {
 		fmt.Println(err)
+	}
+	// Default to standard input.
+	if len(files) == 0 {
+		files = append(files, os.Stdin)
 	}
 	// Scramble each file line-by-line.
 	random := arguments["--random"].(bool)
