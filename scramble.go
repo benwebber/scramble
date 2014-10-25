@@ -112,7 +112,7 @@ func init() {
 }
 
 func main() {
-	arguments, _ := docopt.Parse(usage, nil, true, "scramble 0.1", false)
+	arguments, _ := docopt.Parse(usage, nil, true, "scramble 0.1", true)
 	// Construct a slice of file handles.
 	filenames := arguments["<file>"].([]string)
 	files, e := OpenFiles(filenames...)
