@@ -1,6 +1,8 @@
 # scramble
 
-`scramble` is a small utility that scrambles all the words in a text file.
+`scramble` is a small utility that scrambles words in place.
+
+`scramble` preserves line, word, and character counts, as well as punctuation and the positions of uppercase letters.
 
 ## Usage
 
@@ -15,7 +17,7 @@ or from a list of files:
 
     $ scramble foo bar baz
 
-Specify `-r`/`--random` to completely randomize the character replacements. This will render the document illegible, but will maintain word and character counts.
+Specify `-r`/`--random` to randomize the character replacements. This will render the document completely illegible.
 
     $ scramble -r lipsum.txt
     Iirka krfqq zeubz kgq khqz, dtovqdtdhue chyylzokja ulci.
