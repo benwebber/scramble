@@ -112,15 +112,13 @@ func init() {
 }
 
 func main() {
-	arguments, err := docopt.Parse(usage, nil, true, "scramble 0.1", false)
-	if err != nil {
-		fmt.Println(err)
-	}
+	arguments, _ := docopt.Parse(usage, nil, true, "scramble 0.1", false)
 	// Construct a slice of file handles.
 	filenames := arguments["<file>"].([]string)
-	files, err := OpenFiles(filenames...)
-	if err != nil {
-		fmt.Println(err)
+	files, e := OpenFiles(filenames...)
+	if pe, ok := e.(*os.PathError); ok {
+		fmt.Fprintf(os.Stderr, "scramble: %v: %v\n", pe.Path, pe.Err)
+		os.Exit(1)
 	}
 	// Default to standard input.
 	if len(files) == 0 {
