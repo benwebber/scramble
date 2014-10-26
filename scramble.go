@@ -90,7 +90,8 @@ func Scramble(s string, random bool) string {
 
 // OpenFiles opens the named files for reading and returns a slice of file
 // descriptors.
-// If there is an error opening any file, OpenFiles will return an empty slice.
+// If there is an error opening any file, OpenFiles will return nil and the
+// error.
 func OpenFiles(filenames ...string) ([]*os.File, error) {
 	files := []*os.File{}
 	for _, fn := range filenames {
@@ -100,7 +101,7 @@ func OpenFiles(filenames ...string) ([]*os.File, error) {
 		}
 		f, err := os.Open(fn)
 		if err != nil {
-			return []*os.File{}, err
+			return nil, err
 		}
 		files = append(files, f)
 	}
